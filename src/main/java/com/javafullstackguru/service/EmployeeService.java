@@ -9,7 +9,7 @@ import com.javafullstackguru.entity.Employee;
 @Service
 public interface EmployeeService {
 	
-	Employee creatEmployee(Employee employee);
+	Employee createEmployee(Employee employee);
 	Employee getEmployeeById(Integer id);
 	List<Employee> getAllEmployees();
 	Employee updateEmployee(Integer id, Employee employee);
