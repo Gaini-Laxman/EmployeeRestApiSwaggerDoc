@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import com.javafullstackguru.entity.Employee;
 import com.javafullstackguru.exception.UserNotFoundException;
 import com.javafullstackguru.service.EmployeeServiceImpl;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api")
@@ -16,36 +17,40 @@ public class EmployeeRestController {
     private EmployeeServiceImpl employeeService;
 
     @PostMapping("/employee")
-    public ResponseEntity<Employee> addEmployee(@RequestBody Employee employee) {
-        var createdEmployee = employeeService.createEmployee(employee); // Fixed typo
-        return ResponseEntity.status(201).body(createdEmployee); // 201 Created
+    public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee) {
+        var createdEmployee = employeeService.createEmployee(employee);
+        return ResponseEntity.status(201).body(createdEmployee);
     }
 
     @GetMapping("/employees")
-    public ResponseEntity<List<Employee>> getAllEmployees() {
-        return ResponseEntity.ok(employeeService.getAllEmployees());
+    public ResponseEntity<List<Employee>> getAllEmployees(@RequestParam(defaultValue = "0") int page,
+                                                          @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(employeeService.getAllEmployees(page, size));
     }
 
-    @GetMapping("/employee/{id}") // Changed the path to be consistent
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable Integer id) {
-        var employee = employeeService.getEmployeeById(id);
-        return ResponseEntity.ok(employee);
+    @GetMapping("/employee/{id}")
+    public ResponseEntity<Employee> getEmployeeById(@PathVariable String id) {
+        try {
+            var employee = employeeService.getEmployeeById(id);
+            return ResponseEntity.ok(employee);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 
     @PutMapping("/employee/{id}")
-    public ResponseEntity<Employee> updateEmployee(@PathVariable Integer id, @RequestBody Employee employee) {
-        employee.setId(id); // Set the ID for the update
+    public ResponseEntity<Employee> updateEmployee(@PathVariable String id, @RequestBody Employee employee) {
         var updatedEmployee = employeeService.updateEmployee(id, employee);
         return ResponseEntity.ok(updatedEmployee);
     }
 
     @DeleteMapping("/employee/{id}")
-    public ResponseEntity<Void> deleteEmployee(@PathVariable Integer id) {
+    public ResponseEntity<Void> deleteEmployee(@PathVariable String id) {
         try {
             employeeService.deleteEmployee(id);
-            return ResponseEntity.noContent().build(); // Return 204 No Content
+            return ResponseEntity.noContent().build();
         } catch (UserNotFoundException e) {
-            return ResponseEntity.notFound().build(); // Return 404 Not Found
+            return ResponseEntity.notFound().build();
         }
     }
 }
